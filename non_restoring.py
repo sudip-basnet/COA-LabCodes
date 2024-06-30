@@ -1,80 +1,89 @@
-def add(A,B):
+def rjust_number(n1, n2):
+    l1 = len(n1)
+    l2 = len(n2)
+    if l1 > l2:
+        n2 = n2 .rjust(l1, '0')
+    elif l2 > l1 :
+        n1 = n1.rjust(l2, '0')
+
+    return (n1, n2)
+
+def twoComplement(B):
+    B_1C = ""
+
+    for i in range(len(B)):
+        temp = '1' if B[i] == '0' else '0'
+        B_1C = B_1C + temp
+        temp = ''
+
+    B_1C, ones = rjust_number(B_1C, '1')
+    B_2C = add(B_1C, ones , len(ones))
+    
+    return B_2C
+
+def add(A, B, N):
     A = A[::-1]
     B = B[::-1]
-    carry = 0
-    rev_Result = ""
-    for i in range(len(A)):
-        sum = int(A[i])^int(B[i])^carry
-        carry = int(A[i])&int(B[i]) | ((int(A[i])^int(B[i]))&carry)
-        rev_Result += str(sum)
-    return (rev_Result[::-1])
 
-def number_justify(n1,n2):
-    if len(n1)>len(n2):
-        if n2[0] == "0" :
-            n2 = n2.rjust(len(n1),"0")
-        else:
-            n2 = n2.rjust(len(n1),"1")
-    else:
-        if n1[0] == "0" :
-            n1 = n1.rjust(len(n2),"0")
-        else:
-            n1 = n1.rjust(len(n2),"1")
-    return (n1,n2)
+    res = ""
+    Carry = 0 
+    for i in range(N):
+        S = int(A[i]) ^ int(B[i]) ^ Carry 
+        Carry = ( int(A[i]) & int(B[i]) ) | ( Carry & ( int(A[i]) ^ int(B[i] ) ) )
+        res = str(S) + res
 
+    res = str(Carry) + res 
 
-def twos_complement(n):
-    sum = ""
-    for i in range(len(n)):
-        if n[i] == "0":
-            sum+="1"
-        else:
-            sum+="0"
-    sum,num = number_justify(sum,"01")
-    return add(sum,num)
+    return res 
 
+def sub(A, B, N):
 
-
-def restoring(dividend,divisor):
-    A = "0"
-    dividend,A = number_justify(dividend,A)
-    for i in range(len(dividend)):
-        if  A[0] == "1":
-            if i == len(dividend)-1:
-                A,divisor = number_justify(A,divisor)
-                A = add(A,divisor)
-                
-            else:
-                A = A[1:] + dividend[0]
-                A,divisor = number_justify(A,divisor)
-                A = add(A,divisor)
-                if A[0] == "0":
-                    dividend = dividend[1:] + "1"
-                else:
-                    dividend = dividend[1:] + "0"
-                
-        
-        else:
-            A = A[1:] + dividend[0]
-            neg_divisor = twos_complement(divisor)
-            A,neg_divisor = number_justify(A,neg_divisor)
-            A= add(A,neg_divisor)
-            if A[0] == "0" :
-                dividend = dividend[1:] + "1"
-            else:
-                dividend = dividend[1:] + "0"
-
+    B_2C = twoComplement(B)
     
-    return dividend,A
+    B_2C , A  = rjust_number(B_2C, A)
+
+    res = add(A, B_2C, len(A))
+
+    res = res[len(res)-N:]
+
+    return res
 
 
 
+def nonRestoring(Q, M):
+    A='0'
+    A,M = rjust_number(A,M)
 
-dividend = input("Enter the value of dividend.")
-divisor = input("Enter the value of divisor")
-dividend = "0" + dividend
-divisor = "0" + divisor
+    for i in range(len(Q)):
 
-quotient,remainder = restoring(dividend,divisor)
+        if(A[0] == "1"):
+            A = A[1:] + Q[0]
+            A = add(A,M,len(M))
+            A=A[len(A) - len(M):]
 
-print(f"Quotient = {quotient} \nRemainder = {remainder}")
+        else:
+            A = A[1:] + Q[0]
+            A = sub(A,M, len(M))
+
+        if(A[0] == "1"):
+            Q = Q[1:] + '0'
+        else:
+            Q = Q[1:] + '1'
+
+    if(A[0]=="1"):
+        A = add(A,M, len(M))
+        A = A[len(A) - len(M):]
+
+
+    return (Q,A)
+
+
+def main():
+    dividend = input("Enter the value of dividend:")
+    divisor = input("Enter the value of divisor:")
+    Quiotent, Remainder = nonRestoring(dividend,divisor)
+    print(Quiotent)
+    print(Remainder)
+
+if __name__ == "__main__":
+    main()
